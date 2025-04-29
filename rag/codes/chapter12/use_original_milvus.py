@@ -10,7 +10,7 @@ if client.has_collection(collection_name="demo_collection"):
 
 client.create_collection(
     collection_name="demo_collection",
-    dimension=1024,
+    dimension=4096,
 )
 
 docs = [
@@ -40,17 +40,18 @@ res = client.search(
 print(f"Query: {query} \nSearch result:\n {res}")
 
 
-docs = [
+docs2 = [
     "Machine learning has been used for drug design.",
     "Computational synthesis with AI algorithms predicts molecular properties.",
     "DDR1 is involved in cancers and fibrosis.",
 ]
-vecs =[embedding_model(doc) for doc in docs]
-data = [
-    {"id": 3 + i, "vector": vecs[i], "text": docs[i], "subject": "biology"}
-    for i in range(len(vecs))
+vecs2 =[embedding_model(doc) for doc in docs2]
+data2 = [
+    {"id": 3 + i, "vector": vecs2[i], "text": docs2[i], "subject": "biology"}
+    for i in range(len(vecs2))
 ]
-client.insert(collection_name="demo_collection", data=data)
+res = client.insert(collection_name="demo_collection", data=data2)
+print(f"Inserted data into client:\n {res}")
 res = client.search(
     collection_name="demo_collection",
     data=[embedding_model("tell me AI related information")],

@@ -4,15 +4,14 @@ from lazyllm.tools.rag.doc_node import MetadataMode
 
 from pymilvus import MilvusClient
 
-from online_models import embedding_model, llm, rerank_model
+from online_models import custom_embedding_model as embedding_model, llm, rerank_model
 
-DOC_PATH = "/mnt/lustre/share_data/dist/cmrc2018/data_kb" 
+DOC_PATH = "/mnt/lustre/share_data/dist/test_docs" 
 
 # milvus client初始化
 client = MilvusClient("dbs/rag_milvus.db")
 if client.has_collection(collection_name="demo_collection"):
     client.drop_collection(collection_name="demo_collection")
-
 client.create_collection(
     collection_name="demo_collection",
     dimension=1024,

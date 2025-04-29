@@ -1,37 +1,36 @@
 from typing import Dict, List, Union
 
 from lazyllm import OnlineChatModule, OnlineEmbeddingModule
+
+
 from lazyllm.module import OnlineEmbeddingModuleBase
-
-DOUBAO_API_KEY = ""
-DEEPSEEK_API_KEY = ""
-QWEN_API_KEY = ""
-
 
 class CustomOnlineEmbeddingModule(OnlineEmbeddingModuleBase):
     """CustomOnlineEmbeddingModule"""
 
-    def __init__(
-            self,
-            embed_url,
-            embed_model_name,
-            api_key,
-            model_series):
+    def __init__(self, embed_url, embed_model_name, api_key, model_series):
         super().__init__(
-            embed_url=embed_url, embed_model_name=embed_model_name, api_key=api_key, model_series=model_series
+            embed_url=embed_url, embed_model_name=embed_model_name,
+            api_key=api_key, model_series=model_series
         )
 
     def _encapsulated_data(self, text: str, **kwargs) -> Dict[str, str]:
-        # TODO delete inputs, use 'input' in the future
         json_data = {"inputs": text, "model": self._embed_model_name}
         if len(kwargs) > 0:
             json_data.update(kwargs)
 
         return json_data
 
-    def _parse_response(self, response: Union[List[List[str]], Dict]) -> Union[List[List[str]], Dict]:
+    def _parse_response(
+            self,
+            response: Union[List[List[str]], Dict]
+        ) -> Union[List[List[str]], Dict]:
         return response
 
+
+DOUBAO_API_KEY = ""
+DEEPSEEK_API_KEY = ""
+QWEN_API_KEY = ""
 
 llm = OnlineChatModule(
     source="deepseek",

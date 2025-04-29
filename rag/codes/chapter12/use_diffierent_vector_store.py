@@ -3,9 +3,9 @@ import time
 import lazyllm
 from lazyllm import LOG
 
-from online_models import embedding_model    # 使用线上模型
+from online_models import custom_embedding_model as embedding_model    # 使用线上模型
 
-DOC_PATH = "/mnt/lustre/share_data/dist/cmrc2018/data_kb" 
+DOC_PATH = "/mnt/lustre/share_data/dist/test_docs" 
 
 def test_store(store_conf: dict=None):
     """接收存储配置，测试不同配置下系统启动性能"""
@@ -48,8 +48,8 @@ milvus_store_conf = {
     'kwargs': {
         'uri': 'dbs/milvus1.db',
         'index_kwargs': {
-        'index_type': 'HNSW',
-        'metric_type': 'COSINE',
+            'index_type': 'HNSW',
+            'metric_type': 'COSINE',
         }
     },
 }
@@ -62,8 +62,7 @@ test_conf = {
 }
 start_times = ""
 for store_type, store_conf in test_conf.items():
-    LOG.info(f"Store type: {store_type}")
     # 调用测试函数
     res = test_store(store_conf=store_conf)
-    start_times += res
+    start_times += f"Store type: {store_type}: {res}"
 print(start_times)

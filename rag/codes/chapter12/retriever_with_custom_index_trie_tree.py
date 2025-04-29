@@ -1,4 +1,3 @@
-import os
 import time
 
 from typing import Dict, List, Optional
@@ -6,12 +5,12 @@ from typing import Dict, List, Optional
 import lazyllm
 from lazyllm import LOG
 
-from online_models import embedding_model   # 使用线上模型
+from online_models import custom_embedding_model as embedding_model # 使用线上模型
 
 from lazyllm.tools.rag import IndexBase, StoreBase, DocNode
 from lazyllm.common import override
 
-DOC_PATH = "/mnt/lustre/share_data/dist/cmrc2018/data_kb"
+DOC_PATH = "/mnt/lustre/share_data/dist/index"
 
 
 class TrieNode:
@@ -29,8 +28,8 @@ class TrieTreeIndex(IndexBase):
 
     @override
     def update(self, nodes: List['DocNode']) -> None:
-        # 仅处理 block 分组
-        if not nodes or nodes[0]._group != 'tree':
+        # 仅处理 words 分组
+        if not nodes or nodes[0]._group != 'words':
             return
         for n in nodes:
             uid = n._uid
@@ -44,8 +43,8 @@ class TrieTreeIndex(IndexBase):
 
     @override
     def remove(self, uids: List[str], group_name: Optional[str] = None) -> None:
-        # 仅处理 block 分组
-        if group_name != 'tree':
+        # 仅处理 words 分组
+        if group_name != 'words':
             return
         for uid in uids:
             word = self.uid_to_word.pop(uid, None)
@@ -86,14 +85,14 @@ class LinearSearchIndex(IndexBase):
 
     @override
     def update(self, nodes: List['DocNode']) -> None:
-        if not nodes or nodes[0]._group != 'linear':
+        if not nodes or nodes[0]._group != 'words':
             return
         for n in nodes:
             self.nodes.append(n)
 
     @override
     def remove(self, uids: List[str], group_name: Optional[str] = None) -> None:
-        if group_name != 'linear':
+        if group_name != 'words':
             return
         for uid in uids:
             for i, n in enumerate(self.nodes):
@@ -112,22 +111,16 @@ class LinearSearchIndex(IndexBase):
         return res
         
 
-
-docs1 = lazyllm.Document(dataset_path=DOC_PATH, embed=embedding_model)
-# 创建节点组
-docs1.create_node_group(name='linear', transform=(lambda d: d.split('\r\n')))
-docs1.create_node_group(name='tree', transform=(lambda d: d.split('\r\n')))
-# 注册索引
-docs1.register_index("trie_tree", TrieTreeIndex, docs1.get_store())
-docs1.register_index("linear_search", LinearSearchIndex)
-# 创建检索器，指定对应索引类型
-retriever1 = lazyllm.Retriever(docs1, group_name="linear", index="linear_search", topk=1)
-retriever2 = lazyllm.Retriever(docs1, group_name="tree", index="trie_tree", topk=1)
-# 检索器初始化
-retriever1.start()
+docs = lazyllm.Document(dataset_path=DOC_PATH, embed=embedding_model)
+docs.create_node_group(name='words', transform=(lambda d: d.split('\r\n')))             # 创建节点组
+docs.register_index("trie_tree", TrieTreeIndex, docs.get_store())                       # 注册索引
+docs.register_index("linear_search", LinearSearchIndex)
+retriever1 = lazyllm.Retriever(docs, group_name="words", index="linear_search", topk=1) # 创建检索器，指定索引类型
+retriever2 = lazyllm.Retriever(docs, group_name="words", index="trie_tree", topk=1)
+retriever1.start()                                                                      # 检索器初始化
 retriever2.start()
 
-for query in ["a", "lazyllm", "zwitterionic"]:
+for query in ["a", "lazyllm", "zwitterionic"]:                                          # 分别检索词表中靠前、中间、靠后单词
     st = time.time()
     res = retriever1(query)
     et = time.time()
