@@ -111,7 +111,7 @@ def main(techer_name, student_name, dataset_name, demo=False, sft_data_path=None
             'val_size': 0.01,
             'per_device_train_batch_size': 2,
             'num_train_epochs': 2.0,
-            'launcher': launchers.sco(nnode=1, nproc=8, ngpus=8)
+            'launcher': launchers.empty(ngpus=8)
         }))\
         .prompt(dict(system='You are a helpful assistant.', drop_builtin_system=True))\
         .deploy_method(deploy.Vllm)

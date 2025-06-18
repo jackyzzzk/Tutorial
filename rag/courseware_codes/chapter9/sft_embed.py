@@ -109,7 +109,7 @@ def deploy_serve(
         .finetune_method((
             lazyllm.finetune.flagembedding,
             {
-                'launcher': lazyllm.launchers.remote(nnode=1, nproc=1, ngpus=ngpus),
+                'launcher': lazyllm.launchers.empty(ngpus=ngpus),
                 'per_device_train_batch_size': per_device_batch_size,
                 'num_train_epochs': num_epochs,
             }
